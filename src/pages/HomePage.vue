@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>ホームページ</h2>
+    <h2>家計簿へようこそ！</h2>
 
     <div v-if="!loggedIn">
       <router-link to="/login">

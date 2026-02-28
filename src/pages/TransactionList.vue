@@ -1,186 +1,190 @@
 <template>
   <div>
 
-    <div class="header">
-      <h2>家計簿一覧</h2>
-      <div class="nav">
-        <button @click="goHome">Home</button>
-        <button @click="goProfile">My Profile</button>
-        <button @click="logout">Logout</button>
-      </div>
-    </div>
+    <full-calendar
+      ref="calendar"
+      :plugins="[ dayGridPlugin, interactionPlugin ]"
+      :events="calendarEvents"
+      defaultView="dayGridMonth"
+      :local="jalocal"
+      style="height: 600px;"
+    ></full-calendar>
 
-    <table border="1">
-      <thead>
-        <tr>
-          <th>日付</th>
-          <th>種別</th>
-          <th>カテゴリ</th>
-          <th>金額</th>
-          <th>支払方法</th>
-          <th>操作</th>
-        </tr>
-      </thead>
+    <div class="modal fade" ref="transactionModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ editingId ? '家計簿を編集' : '家計簿をつける' }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label class="form-label">収支種別</label>
+                <select class="form-select" v-model="newTransaction.transaction_type">
+                  <option value="">選択してください</option>
+                  <option value="income">収入</option>
+                  <option value="expense">支出</option>
+                </select>
+              </div>
 
-      <tbody>
-        <tr v-for="t in transactions" :key="t.id">
-          <td>{{ t.date }}</td>
-          <td>{{ t.transaction_type === 'income' ? '収入' : '支出' }}</td>
-          <td>{{ t.category }}</td>
-          <td>{{ t.amount }} 円</td>
-          <td>{{ t.transaction_type === 'income' ? '-' : t.payment_method }}</td>
-          <td>
-            <button @click="editTransaction(t)">編集</button>
-            <button @click="deleteTransaction(t.id)">削除</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              <div class="mb-3">
+                <label class="form-label">カテゴリー</label>
+                <template v-if="newTransaction.transaction_type === 'income'">
+                  <input type="text" class="form-control" value="収入" readonly>
+                </template>
+                <template v-else-if="newTransaction.transaction_type === 'expense'">
+                  <select class="form-select" v-model="newTransaction.category">
+                    <option value="">選択してください</option>
+                    <option value="食費">食費</option>
+                    <option value="交通費">交通費</option>
+                    <option value="趣味">趣味</option>
+                    <option value="水道光熱費">水道光熱費</option>
+                    <option value="家賃">家賃</option>
+                    <option value="衣類費">衣類費</option>
+                    <option value="医療費">医療費</option>
+                    <option value="交際費">交際費</option>
+                    <option value="日用品費">日用品費</option>
+                    <option value="通信費">通信費</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </template>
+              </div>
 
-    <hr />
+              <div class="mb-3">
+                <label class="form-label">金額</label>
+                <input type="number" class="form-control" v-model="newTransaction.amount">
+              </div>
 
-    <h3>新規入力</h3>
-    <form @submit.prevent="createTransaction">
+              <div class="mb-3">
+                <label class="form-label">日付</label>
+                <input type="date" class="form-control" v-model="newTransaction.date">
+              </div>
 
-      <label>種別</label>
-      <select v-model="newTransaction.transaction_type" required>
-        <option value="income">収入</option>
-        <option value="expense">支出</option>
-      </select>
+              <div class="mb-3">
+                <label class="form-label">支払方法</label>
+                <template v-if="newTransaction.transaction_type === 'income'">
+                  <input type="text" class="form-control" value="-" readonly>
+                </template>
+                <template v-else-if="newTransaction.transaction_type === 'expense'">
+                  <select class="form-select" v-model="newTransaction.payment_method">
+                    <option value="">選択してください</option>
+                    <option value="現金">現金</option>
+                    <option value="クレジット">クレジット</option>
+                    <option value="引き落とし">引き落とし</option>
+                  </select>
+                </template>
+              </div>
+            </form>
+          </div>
 
-      <div v-if="newTransaction.transaction_type === 'expense'">
-        <label>カテゴリ</label>
-        <select v-model="newTransaction.category" required>
-          <option>食費</option>
-          <option>交通費</option>
-          <option>水道光熱費</option>
-          <option>家賃</option>
-          <option>衣類</option>
-          <option>医療費</option>
-          <option>交際費</option>
-          <option>日用品</option>
-          <option>通信費</option>
-          <option>その他</option>
-        </select>
-      </div>
-
-      <label>金額</label>
-      <input type="number" v-model.number="newTransaction.amount" required />
-
-      <label>日付</label>
-      <input type="date" v-model="newTransaction.date" required />
-
-      <div v-if="newTransaction.transaction_type === 'expense'">
-        <label>支払方法</label>
-        <select v-model="newTransaction.payment_method" required>
-          <option>現金</option>
-          <option>クレカ</option>
-        </select>
-
-        <div v-if="newTransaction.payment_method === 'クレカ'">
-          <label>カード番号</label>
-          <input v-model="newTransaction.card_number" />
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            <button type="button" class="btn btn-primary" @click="createTransaction">
+              {{ editingId ? '更新' : '追加' }}
+            </button>
+          </div>
         </div>
       </div>
-
-      <br />
-      <button type="submit">追加</button>
-    </form>
-
+    </div>
   </div>
 </template>
 
 <script>
 import api from '@/plugins/axios'
+import FullCalendar from '@fullcalendar/vue'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import '@fullcalendar/core/main.css'
+import '@fullcalendar/daygrid/main.css'
+import * as bootstrap from 'bootstrap'
 
 export default {
   name: 'TransactionList',
-
+  components: { FullCalendar },
   data() {
     return {
       transactions: [],
+      calendarEvents: [],
+      editingId: null,
       newTransaction: {
         transaction_type: '',
         category: '',
         amount: 0,
         date: '',
-        payment_method: '',
-        card_number: ''
-      }
+        payment_method: ''
+      },
+      dayGridPlugin,
+      interactionPlugin
     }
   },
-
   async mounted() {
     await this.fetchTransactions()
+
+    const calendar = this.$refs.calendar.getApi()
+    calendar.on('dateClick', this.openModalForDate)
+    calendar.on('eventClick', this.openModalForEvent)
   },
-
   methods: {
-
     async fetchTransactions() {
-      try {
-        const res = await api.get('/transactions')
-        this.transactions = res.data
-      } catch (err) {
-        console.error('取引一覧取得失敗:', err)
-      }
+      const res = await api.get('/transactions')
+      this.transactions = res.data
+
+      this.calendarEvents = res.data.map(t => ({
+        id: t.id,
+        title: `${t.transaction_type === 'income' ? '+' : '-'}${t.amount}円`,
+        start: t.date,
+        color: t.transaction_type === 'income' ? 'blue' : 'red'
+      }))
+    },
+
+    openModalForDate(info) {
+      this.resetForm()
+      this.newTransaction.date = info.dateStr
+      new bootstrap.Modal(this.$refs.transactionModal).show()
+    },
+
+    openModalForEvent(info) {
+      const t = this.transactions.find(x => x.id == info.event.id)
+      if (!t) return
+      this.editTransaction(t)
+      new bootstrap.Modal(this.$refs.transactionModal).show()
     },
 
     async createTransaction() {
-      try {
-        if (this.newTransaction.transaction_type === 'income') {
-          this.newTransaction.category = '収入'
-          this.newTransaction.payment_method = ''
-          this.newTransaction.card_number = ''
-        }
+      if (!this.newTransaction.transaction_type) {
+        alert('収支種別を選択してください')
+        return
+      }
 
+      if (this.editingId) {
+        await api.patch(`/transactions/${this.editingId}`, { transaction: this.newTransaction })
+        alert('更新しました')
+      } else {
         await api.post('/transactions', { transaction: this.newTransaction })
         alert('追加しました')
-
-        await this.fetchTransactions()
-
-        this.resetForm()
-      } catch (err) {
-        console.error('登録失敗:', err)
-        alert('登録に失敗しました')
       }
-    },
 
-    async deleteTransaction(id) {
-      if (!confirm('削除しますか？')) return
-      try {
-        await api.delete(`/transactions/${id}`)
-        await this.fetchTransactions()
-      } catch (err) {
-        console.error('削除失敗:', err)
-      }
+      await this.fetchTransactions()
+
+      const modal = bootstrap.Modal.getInstance(this.$refs.transactionModal)
+      modal.hide()
     },
 
     editTransaction(t) {
-      alert(`${t.transaction_type === 'income' ? '収入' : '支出'}の編集機能はここに追加できます`)
-    },
-
-    goProfile() {
-      this.$router.push('/profile')
-    },
-
-    goHome() {
-      this.$router.push('/')
-    },
-
-    logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      this.$router.push('/login')
+      this.editingId = t.id
+      this.newTransaction = { ...t }
     },
 
     resetForm() {
+      this.editingId = null
       this.newTransaction = {
         transaction_type: '',
         category: '',
         amount: 0,
         date: '',
-        payment_method: '',
-        card_number: ''
+        payment_method: ''
       }
     }
   }
@@ -188,14 +192,8 @@ export default {
 </script>
 
 <style scoped>
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.nav button {
-  margin-left: 10px;
+.fc {
+  max-width: 900px;
+  margin: 40px auto;
 }
 </style>
