@@ -1,27 +1,50 @@
 <template>
-  <div>
+  <div class="dashboard-container">
 
-    <full-calendar
-      ref="calendar"
-      :plugins="[ dayGridPlugin, interactionPlugin ]"
-      :events="calendarEvents"
-      defaultView="dayGridMonth"
-      :local="jalocal"
-      style="height: 600px;"
-    ></full-calendar>
+    <!-- カレンダー＆サマリー -->
+    <div class="calendar-wrapper">
+      <div class="summary">
+        <div class="summary-item income">収入: {{ totalIncome }}円</div>
+        <div class="summary-item expense">支出: {{ totalExpense }}円</div>
+        <div class="summary-item balance">残金: {{ balance }}円</div>
+      </div>
 
-    <div class="modal fade" ref="transactionModal" tabindex="-1" aria-hidden="true">
+      <!-- カレンダー -->
+      <FullCalendar
+        defaultView="dayGridMonth"
+        :plugins="calendarPlugins"
+        :events="calendarEvents"
+        locale="ja"
+        :header-toolbar="calendarHeader"
+        @dateClick="openModalForDate"
+        @eventClick="openModalForEvent"
+      />
+    </div>
+
+    <!-- 円グラフ -->
+    <div class="chart-wrapper">
+      <h4 class="chart-title">収入と支出内訳</h4>
+      <apexchart
+        type="pie"
+        :options="dynamicChartOptions"
+        :series="chartSeries"
+        height="100%"
+      />
+    </div>
+
+    <!-- モーダル -->
+    <div class="modal fade" ref="transactionModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ editingId ? '家計簿を編集' : '家計簿をつける' }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-          
           <div class="modal-body">
             <form>
+              <!-- 収支種別 -->
               <div class="mb-3">
-                <label class="form-label">収支種別</label>
+                <label>収支種別</label>
                 <select class="form-select" v-model="newTransaction.transaction_type">
                   <option value="">選択してください</option>
                   <option value="income">収入</option>
@@ -29,65 +52,86 @@
                 </select>
               </div>
 
+              <!-- カテゴリー -->
               <div class="mb-3">
-                <label class="form-label">カテゴリー</label>
-                <template v-if="newTransaction.transaction_type === 'income'">
-                  <input type="text" class="form-control" value="収入" readonly>
-                </template>
-                <template v-else-if="newTransaction.transaction_type === 'expense'">
-                  <select class="form-select" v-model="newTransaction.category">
-                    <option value="">選択してください</option>
-                    <option value="食費">食費</option>
-                    <option value="交通費">交通費</option>
-                    <option value="趣味">趣味</option>
-                    <option value="水道光熱費">水道光熱費</option>
-                    <option value="家賃">家賃</option>
-                    <option value="衣類費">衣類費</option>
-                    <option value="医療費">医療費</option>
-                    <option value="交際費">交際費</option>
-                    <option value="日用品費">日用品費</option>
-                    <option value="通信費">通信費</option>
-                    <option value="その他">その他</option>
-                  </select>
-                </template>
+                <label>カテゴリー</label>
+                <input
+                  v-if="newTransaction.transaction_type==='income'"
+                  class="form-control"
+                  value="収入"
+                  readonly
+                />
+                <select
+                  v-if="newTransaction.transaction_type==='expense'"
+                  class="form-select"
+                  v-model="newTransaction.category"
+                >
+                  <option value="">選択してください</option>
+                  <option>食費</option>
+                  <option>交通費</option>
+                  <option>趣味</option>
+                  <option>水道光熱費</option>
+                  <option>家賃</option>
+                  <option>衣類費</option>
+                  <option>医療費</option>
+                  <option>交際費</option>
+                  <option>日用品費</option>
+                  <option>通信費</option>
+                  <option>その他</option>
+                </select>
               </div>
 
+              <!-- 金額 -->
               <div class="mb-3">
-                <label class="form-label">金額</label>
-                <input type="number" class="form-control" v-model="newTransaction.amount">
+                <label>金額</label>
+                <input type="number" class="form-control" v-model="newTransaction.amount" />
               </div>
 
+              <!-- 日付 -->
               <div class="mb-3">
-                <label class="form-label">日付</label>
-                <input type="date" class="form-control" v-model="newTransaction.date">
+                <label>日付</label>
+                <input type="date" class="form-control" v-model="newTransaction.date" />
               </div>
 
+              <!-- 支払方法 -->
               <div class="mb-3">
-                <label class="form-label">支払方法</label>
-                <template v-if="newTransaction.transaction_type === 'income'">
-                  <input type="text" class="form-control" value="-" readonly>
-                </template>
-                <template v-else-if="newTransaction.transaction_type === 'expense'">
-                  <select class="form-select" v-model="newTransaction.payment_method">
-                    <option value="">選択してください</option>
-                    <option value="現金">現金</option>
-                    <option value="クレジット">クレジット</option>
-                    <option value="引き落とし">引き落とし</option>
-                  </select>
-                </template>
+                <label>支払方法</label>
+                <input
+                  v-if="newTransaction.transaction_type==='income'"
+                  class="form-control"
+                  value="-"
+                  readonly
+                />
+                <select
+                  v-if="newTransaction.transaction_type==='expense'"
+                  class="form-select"
+                  v-model="newTransaction.payment_method"
+                >
+                  <option value="">選択してください</option>
+                  <option>現金</option>
+                  <option>クレジット</option>
+                  <option>引き落とし</option>
+                </select>
               </div>
             </form>
           </div>
-
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-            <button type="button" class="btn btn-primary" @click="createTransaction">
+            <button
+              v-if="editingId"
+              class="btn btn-danger me-auto"
+              @click="deleteTransaction"
+            >
+              削除
+            </button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            <button class="btn btn-primary" @click="createTransaction">
               {{ editingId ? '更新' : '追加' }}
             </button>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -98,16 +142,23 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import '@fullcalendar/core/main.css'
 import '@fullcalendar/daygrid/main.css'
+import VueApexCharts from 'vue-apexcharts'
 import * as bootstrap from 'bootstrap'
 
 export default {
   name: 'TransactionList',
-  components: { FullCalendar },
+  components: { FullCalendar, apexchart: VueApexCharts },
   data() {
     return {
       transactions: [],
       calendarEvents: [],
       editingId: null,
+      calendarPlugins: [dayGridPlugin, interactionPlugin],
+      calendarHeader: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,dayGridWeek,dayGridDay'
+      },
       newTransaction: {
         transaction_type: '',
         category: '',
@@ -115,16 +166,32 @@ export default {
         date: '',
         payment_method: ''
       },
-      dayGridPlugin,
-      interactionPlugin
+      chartSeries: [],
+      chartLabels: [],
+      baseChartOptions: {
+        colors: [
+          '#3b82f6','#ef4444','#f97316','#facc15','#8b5cf6','#ec4899','#14b8a6','#f43f5e','#60a5fa','#a3e635','#f87171'
+        ],
+        legend: { position: 'bottom', labels: { colors: '#ffffff' }, fontSize: '16px', fontWeight: 600 },
+        chart: { height: '100%' }
+      }
     }
   },
-  async mounted() {
-    await this.fetchTransactions()
-
-    const calendar = this.$refs.calendar.getApi()
-    calendar.on('dateClick', this.openModalForDate)
-    calendar.on('eventClick', this.openModalForEvent)
+  computed: {
+    dynamicChartOptions() {
+      return { ...this.baseChartOptions, labels: this.chartLabels }
+    },
+    totalIncome() {
+      return this.transactions.filter(t => t.transaction_type==='income')
+        .reduce((sum,t)=>sum+Number(t.amount),0)
+    },
+    totalExpense() {
+      return this.transactions.filter(t => t.transaction_type==='expense')
+        .reduce((sum,t)=>sum+Number(t.amount),0)
+    },
+    balance() {
+      return this.totalIncome - this.totalExpense
+    }
   },
   methods: {
     async fetchTransactions() {
@@ -133,67 +200,102 @@ export default {
 
       this.calendarEvents = res.data.map(t => ({
         id: t.id,
-        title: `${t.transaction_type === 'income' ? '+' : '-'}${t.amount}円`,
-        start: t.date,
-        color: t.transaction_type === 'income' ? 'blue' : 'red'
+        title: `${t.transaction_type==='income'?'+':'-'}${t.amount}円`,
+        date: t.date,
+        color: t.transaction_type==='income'?'blue':'red'
       }))
-    },
 
+      // 円グラフデータ作成
+      const income = this.transactions.filter(t => t.transaction_type==='income')
+        .reduce((sum,t)=>sum+Number(t.amount),0)
+
+      const expenses = this.transactions.filter(t => t.transaction_type==='expense')
+      const categoryMap = {}
+      expenses.forEach(e=>{
+        if(!e.category) return
+        categoryMap[e.category] = (categoryMap[e.category]||0)+Number(e.amount)
+      })
+
+      this.chartSeries = [income, ...Object.values(categoryMap)]
+      this.chartLabels = ['収入', ...Object.keys(categoryMap)]
+    },
     openModalForDate(info) {
       this.resetForm()
       this.newTransaction.date = info.dateStr
       new bootstrap.Modal(this.$refs.transactionModal).show()
     },
-
     openModalForEvent(info) {
-      const t = this.transactions.find(x => x.id == info.event.id)
-      if (!t) return
-      this.editTransaction(t)
+      const t = this.transactions.find(x=>x.id==info.event.id)
+      if(!t) return
+      this.editingId = t.id
+      this.newTransaction = {...t}
       new bootstrap.Modal(this.$refs.transactionModal).show()
     },
-
     async createTransaction() {
-      if (!this.newTransaction.transaction_type) {
-        alert('収支種別を選択してください')
-        return
-      }
-
-      if (this.editingId) {
-        await api.patch(`/transactions/${this.editingId}`, { transaction: this.newTransaction })
+      if(!this.newTransaction.transaction_type){ alert('収支種別を選択してください'); return }
+      if(this.editingId){
+        await api.patch(`/transactions/${this.editingId}`, {transaction: this.newTransaction})
         alert('更新しました')
       } else {
-        await api.post('/transactions', { transaction: this.newTransaction })
+        await api.post('/transactions',{transaction: this.newTransaction})
         alert('追加しました')
       }
-
       await this.fetchTransactions()
-
-      const modal = bootstrap.Modal.getInstance(this.$refs.transactionModal)
-      modal.hide()
+      bootstrap.Modal.getInstance(this.$refs.transactionModal).hide()
     },
-
-    editTransaction(t) {
-      this.editingId = t.id
-      this.newTransaction = { ...t }
+    async deleteTransaction() {
+      if(!confirm('この記録を削除しますか？')) return
+      await api.delete(`/transactions/${this.editingId}`)
+      alert('削除しました')
+      await this.fetchTransactions()
+      bootstrap.Modal.getInstance(this.$refs.transactionModal).hide()
     },
-
     resetForm() {
-      this.editingId = null
-      this.newTransaction = {
-        transaction_type: '',
-        category: '',
-        amount: 0,
-        date: '',
-        payment_method: ''
+      this.editingId=null
+      this.newTransaction={
+        transaction_type:'',
+        category:'',
+        amount:0,
+        date:'',
+        payment_method:''
       }
     }
+  },
+  async mounted() {
+    await this.fetchTransactions()
   }
 }
 </script>
 
 <style scoped>
-.fc {
-  max-width: 900px;
-  margin: 40px auto;
+.dashboard-container { 
+  display:flex; gap:20px; align-items:flex-start; }
+
+.calendar-wrapper { flex:0 0 600px; }
+
+.summary {
+  display:flex; justify-content:space-between;
+  margin-bottom:10px; padding:8px; background-color:#555d6e;
+  border-radius:10px;
 }
+
+.summary-item { font-weight:bold; padding:4px 8px; border-radius:20px; }
+.summary-item.income { background-color:#3b82f6; color:white; }
+.summary-item.expense { background-color:#ef4444; color:white; }
+.summary-item.balance { background-color:#10b981; color:white; }
+
+.chart-wrapper {
+  flex:1.5; min-width:650px; max-width:900px; height:500px;
+  background-color:#555d6e; border-radius:20px;
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:flex-start; padding:15px; overflow-y:auto;
+}
+
+.chart-title { 
+  text-align:center; font-weight:bold; margin: bottom 5px; font-size:35px; }
+
+.apexcharts-legend {
+  margin-top: 5px !important;}
+
+.fc { width:100%; height:500px; }
 </style>
