@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard-container">
 
-    <!-- カレンダー＆サマリー -->
     <div class="calendar-wrapper">
       <div class="summary">
         <div class="summary-item income">収入: {{ totalIncome }}円</div>
@@ -9,7 +8,6 @@
         <div class="summary-item balance">残金: {{ balance }}円</div>
       </div>
 
-      <!-- カレンダー -->
       <FullCalendar
         defaultView="dayGridMonth"
         :plugins="calendarPlugins"
@@ -21,7 +19,6 @@
       />
     </div>
 
-    <!-- 円グラフ -->
     <div class="chart-wrapper">
       <h4 class="chart-title">収入と支出内訳</h4>
       <apexchart
@@ -32,7 +29,6 @@
       />
     </div>
 
-    <!-- モーダル -->
     <div class="modal fade" ref="transactionModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -42,7 +38,7 @@
           </div>
           <div class="modal-body">
             <form>
-              <!-- 収支種別 -->
+
               <div class="mb-3">
                 <label>収支種別</label>
                 <select class="form-select" v-model="newTransaction.transaction_type">
@@ -52,7 +48,6 @@
                 </select>
               </div>
 
-              <!-- カテゴリー -->
               <div class="mb-3">
                 <label>カテゴリー</label>
                 <input
@@ -81,19 +76,16 @@
                 </select>
               </div>
 
-              <!-- 金額 -->
               <div class="mb-3">
                 <label>金額</label>
                 <input type="number" class="form-control" v-model="newTransaction.amount" />
               </div>
 
-              <!-- 日付 -->
               <div class="mb-3">
                 <label>日付</label>
                 <input type="date" class="form-control" v-model="newTransaction.date" />
               </div>
 
-              <!-- 支払方法 -->
               <div class="mb-3">
                 <label>支払方法</label>
                 <input
@@ -205,7 +197,6 @@ export default {
         color: t.transaction_type==='income'?'blue':'red'
       }))
 
-      // 円グラフデータ作成
       const income = this.transactions.filter(t => t.transaction_type==='income')
         .reduce((sum,t)=>sum+Number(t.amount),0)
 
