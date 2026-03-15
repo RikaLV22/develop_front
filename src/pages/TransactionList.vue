@@ -81,9 +81,9 @@
 
       <div class="my-panel">
         <h5>あなたの収支</h5>
-        <p>総収入: {{ totalIncome }}円</p>
-        <p>総支出: {{ totalExpense }}円</p>
-        <p>残金: {{ balance }}円</p>
+        <p>総収入: {{ myIncome }}円</p>
+        <p>総支出: {{ myExpense }}円</p>
+        <p>残金: {{ myBalance }}円</p>
       </div>
 
     </div>
@@ -212,6 +212,7 @@
                   v-if="newTransaction.transaction_type==='income'"
                   class="form-control"
                   value="-"
+                  v-model="newTransaction.category"
                   readonly
                 />
 
@@ -286,6 +287,7 @@ export default {
     return {
       transactions: [],
       calendarEvents: [],
+      currentUser: null,
       editingId: null,
 
       calendarPlugins: [dayGridPlugin, interactionPlugin],
@@ -394,26 +396,46 @@ export default {
   },
 
   computed: {
-    dynamicChartOptions() {
-      return { ...this.baseChartOptions, labels: this.chartLabels }
-    },
-
-    totalIncome() {
-      return this.transactions
-        .filter(t => t.transaction_type === 'income')
-        .reduce((sum,t)=>sum+Number(t.amount),0)
-    },
-
-    totalExpense() {
-      return this.transactions
-        .filter(t => t.transaction_type === 'expense')
-        .reduce((sum,t)=>sum+Number(t.amount),0)
-    },
-
-    balance() {
-      return this.totalIncome - this.totalExpense
-    }
+  dynamicChartOptions() {
+    return { ...this.baseChartOptions, labels: this.chartLabels }
   },
+
+  totalIncome() {
+    return this.transactions
+      .filter(t => t.transaction_type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  },
+
+  totalExpense() {
+    return this.transactions
+      .filter(t => t.transaction_type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  },
+
+  balance() {
+    return this.totalIncome - this.totalExpense
+  },
+
+  myTransactions() {
+    if (!this.currentUser || !this.transactions) return []
+    return this.transactions.filter(
+      t => Number(t.user_id) === Number(this.currentUser.id)
+    )
+  },
+  myIncome() {
+    return this.myTransactions
+      .filter(t => t.transaction_type === "income")
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  },
+  myExpense() {
+    return this.myTransactions
+      .filter(t => t.transaction_type === "expense")
+      .reduce((sum, t) => sum + Number(t.amount), 0)
+  },
+  myBalance() {
+    return this.myIncome - this.myExpense
+  }
+},
 
   methods: {
 
@@ -473,6 +495,9 @@ export default {
           name: name,
           data: [userMap[name] / total * 100]
         }))
+      console.log("Filtered myTransactions:", this.transactions.filter(
+        t => Number(t.user_id) === Number(this.currentUser.id)
+      ))
     },
 
 
@@ -496,6 +521,10 @@ export default {
       if(!this.newTransaction.transaction_type){
         alert('収支種別を選択してください')
         return
+      }
+      
+      if(this.newTransaction.transaction_type === "income"){
+        this.newTransaction.category = "収入"
       }
 
       if(this.editingId){
@@ -557,7 +586,30 @@ export default {
   },
 
   async mounted() {
+
+    const userStr = localStorage.getItem("currentUser")
+    if (userStr) {
+      this.currentUser = JSON.parse(userStr)
+    } else {
+      this.currentUser = null
+    }
+
     await this.fetchTransactions()
+
+    if (this.transactions && this.transactions.length) {
+      this.transactions.forEach(t => {
+        console.log(
+          `Transaction ${t.id}: user_id=${t.user_id}, type=${t.transaction_type}, amount=${t.amount}`
+        )
+      })
+    }
+
+    console.log("currentUser:", this.currentUser)
+    console.log("transactions:", this.transactions)
+    console.log("myTransactions:", this.myTransactions)
+    console.log("myIncome:", this.myIncome)
+    console.log("myExpense:", this.myExpense)
+    console.log("myBalance:", this.myBalance)
   }
 }
 </script>

@@ -43,7 +43,7 @@ export default {
         })
 
         localStorage.setItem('token', res.data.token)
-        localStorage.setItem('user', JSON.stringify(res.data.user))
+        localStorage.setItem('currentUser', JSON.stringify(res.data.user))
 
         alert(`ログイン成功: ${res.data.user.username}`)
 
