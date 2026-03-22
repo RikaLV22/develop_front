@@ -212,7 +212,6 @@
                   v-if="newTransaction.transaction_type==='income'"
                   class="form-control"
                   value="-"
-                  v-model="newTransaction.category"
                   readonly
                 />
 
@@ -228,6 +227,33 @@
                   <option>引き落とし</option>
 
                 </select>
+
+              </div>
+
+              <div
+                class="mb-3"
+                v-if="newTransaction.transaction_type === 'expense' || newTransaction.transaction_type === 'income'"
+              >
+
+              <label>口座</label>
+
+              <select v-model="selectedAccountId" class="form-select">
+                <option value="">選択してください</option>
+                <option
+                  v-for="account in accounts"
+                  :key="account.id"
+                  :value="account.id"
+                >
+                  {{ account.bank.name }} - {{ account.account_number }}
+                    (残高: {{ account.balance }}円)
+                </option>
+              </select>
+
+              <button
+                class="btn btn-sm btn-outline-primary mt-2"
+                @click.prevent="openAccountModal">
+                口座を追加
+              </button>
 
               </div>
 
@@ -262,6 +288,48 @@
 
     </div>
 
+    <div class="modal fade" ref="accountModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">口座登録</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+
+            <div class="mb-3">
+              <label>銀行名</label>
+              <select v-model="newAccount.bank_id" class="form-select">
+                <option value="">選択してください</option>
+                <option v-for="bank in banks" :key="bank.id" :value="bank.id">
+                  {{ bank.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label>口座番号</label>
+              <input v-model="newAccount.account_number" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+              <label>初期残高</label>
+              <input type="number" v-model="newAccount.balance" class="form-control" />
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+            <button class="btn btn-primary" @click="createAccount">登録</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
 
   </div>
 
@@ -289,7 +357,14 @@ export default {
       calendarEvents: [],
       currentUser: null,
       editingId: null,
-
+      accounts: [],
+      banks: [],
+      selectedAccountId: null,
+      newAccount: {
+        bank_id: "",
+        account_number: '',
+        balance: 0
+      },
       calendarPlugins: [dayGridPlugin, interactionPlugin],
 
       calendarHeader: {
@@ -396,55 +471,53 @@ export default {
   },
 
   computed: {
-  dynamicChartOptions() {
-    return { ...this.baseChartOptions, labels: this.chartLabels }
-  },
+    dynamicChartOptions() {
+      return { ...this.baseChartOptions, labels: this.chartLabels }
+    },
 
-  totalIncome() {
-    return this.transactions
-      .filter(t => t.transaction_type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-  },
+    totalIncome() {
+      return this.transactions
+        .filter(t => t.transaction_type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0)
+    },
 
-  totalExpense() {
-    return this.transactions
-      .filter(t => t.transaction_type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-  },
+    totalExpense() {
+      return this.transactions
+        .filter(t => t.transaction_type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0)
+    },
 
-  balance() {
-    return this.totalIncome - this.totalExpense
-  },
+    balance() {
+      return this.totalIncome - this.totalExpense
+    },
 
-  myTransactions() {
-    if (!this.currentUser || !this.transactions) return []
-    return this.transactions.filter(
-      t => Number(t.user_id) === Number(this.currentUser.id)
-    )
+    myTransactions() {
+      if (!this.currentUser || !this.transactions) return []
+      return this.transactions.filter(
+        t => Number(t.user_id) === Number(this.currentUser.id)
+      )
+    },
+    myIncome() {
+      return this.myTransactions
+        .filter(t => t.transaction_type === "income")
+        .reduce((sum, t) => sum + Number(t.amount), 0)
+    },
+    myExpense() {
+      return this.myTransactions
+        .filter(t => t.transaction_type === "expense")
+        .reduce((sum, t) => sum + Number(t.amount), 0)
+    },
+    myBalance() {
+      return this.myIncome - this.myExpense
+    }
   },
-  myIncome() {
-    return this.myTransactions
-      .filter(t => t.transaction_type === "income")
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-  },
-  myExpense() {
-    return this.myTransactions
-      .filter(t => t.transaction_type === "expense")
-      .reduce((sum, t) => sum + Number(t.amount), 0)
-  },
-  myBalance() {
-    return this.myIncome - this.myExpense
-  }
-},
 
   methods: {
 
     async fetchTransactions() {
     
       const res = await api.get('/transactions')
-      console.log(res.data)
       this.transactions = res.data
-
 
       this.calendarEvents = res.data.map(t => ({
         id: t.id,
@@ -453,7 +526,6 @@ export default {
         color: t.transaction_type==='income' ? 'blue' : 'red'
       }))
 
-
       const income = this.transactions
         .filter(t => t.transaction_type==='income')
         .reduce((sum,t)=>sum+Number(t.amount),0)
@@ -461,7 +533,6 @@ export default {
       const expenses = this.transactions.filter(t => t.transaction_type==='expense')
 
       const categoryMap = {}
-
       expenses.forEach(e=>{
         if(!e.category) return
         categoryMap[e.category] =
@@ -471,21 +542,12 @@ export default {
       this.chartSeries = [income, ...Object.values(categoryMap)]
       this.chartLabels = ['収入', ...Object.keys(categoryMap)]
 
-
       const userMap = {}
-
       this.transactions.forEach(t => {
-
         if (t.transaction_type !== "expense") return
-
         const name = t.user_name || "不明"
-
-        if (!userMap[name]) {
-          userMap[name] = 0
-        }
-
+        if (!userMap[name]) userMap[name] = 0
         userMap[name] += Number(t.amount)
-
       })
 
       const total = Object.values(userMap).reduce((a,b)=>a+b,0)
@@ -495,18 +557,13 @@ export default {
           name: name,
           data: [userMap[name] / total * 100]
         }))
-      console.log("Filtered myTransactions:", this.transactions.filter(
-        t => Number(t.user_id) === Number(this.currentUser.id)
-      ))
     },
-
 
     openModalForDate(info) {
       this.resetForm()
       this.newTransaction.date = info.dateStr
       new bootstrap.Modal(this.$refs.transactionModal).show()
     },
-
 
     openModalForEvent(info) {
       const t = this.transactions.find(x=>x.id==info.event.id)
@@ -516,64 +573,95 @@ export default {
       new bootstrap.Modal(this.$refs.transactionModal).show()
     },
 
-    async createTransaction() {
+    openAccountModal() {
+      new bootstrap.Modal(this.$refs.accountModal).show()
+    },
 
-      if(!this.newTransaction.transaction_type){
+    async fetchBanks() {
+      const res = await api.get('/banks')
+      this.banks = res.data
+    },
+
+    async fetchAccounts() {
+      const res = await api.get('/accounts')
+      this.accounts = res.data
+      if(this.accounts.length > 0) this.selectedAccountId = this.accounts[0].id
+    },
+
+    async createAccount() {
+      if (!this.newAccount.bank_id || !this.newAccount.account_number) {
+        alert("入力してください")
+        return
+      }
+      await api.post('/accounts', { account: this.newAccount })
+      alert("口座登録しました")
+      await this.fetchAccounts()
+      bootstrap.Modal.getInstance(this.$refs.accountModal).hide()
+      this.newAccount = { bank_id: "", account_number: '', balance: 0 }
+    },
+
+    async createTransaction() {
+      if (!this.newTransaction.transaction_type) {
         alert('収支種別を選択してください')
         return
       }
-      
-      if(this.newTransaction.transaction_type === "income"){
+
+      if (this.newTransaction.transaction_type === "income") {
         this.newTransaction.category = "収入"
       }
 
-      if(this.editingId){
-        await api.patch(`/transactions/${this.editingId}`,
-          {transaction: this.newTransaction})
+      if (
+        this.newTransaction.payment_method === "引き落とし" &&
+        !this.selectedAccountId
+      ) {
+        alert("口座を選択してください")
+        return
+      }
+
+      const payload = {
+        transaction: {
+          ...this.newTransaction,
+          account_id:
+            this.newTransaction.payment_method === "引き落とし"
+              ? this.selectedAccountId
+              : null
+        }
+      }
+
+      if (this.editingId) {
+        await api.patch(`/transactions/${this.editingId}`, payload)
         alert('更新しました')
       } else {
-        await api.post('/transactions',
-          {transaction: this.newTransaction})
+        await api.post('/transactions', payload)
         alert('追加しました')
+        if (this.newTransaction.transaction_type === 'income') {
+          await api.patch(`/accounts/${this.selectedAccountId}/add_balance`, {
+            amount: Number(this.newTransaction.amount)
+          })
+        }
       }
 
       await this.fetchTransactions()
+      await this.fetchAccounts()
 
-      bootstrap.Modal
-        .getInstance(this.$refs.transactionModal)
-        .hide()
+      bootstrap.Modal.getInstance(this.$refs.transactionModal).hide()
     },
-
 
     async deleteTransaction() {
-
       if(!confirm('この記録を削除しますか？')) return
-
       await api.delete(`/transactions/${this.editingId}`)
-
       alert('削除しました')
-
       await this.fetchTransactions()
-
-      bootstrap.Modal
-        .getInstance(this.$refs.transactionModal)
-        .hide()
+      bootstrap.Modal.getInstance(this.$refs.transactionModal).hide()
     },
-
 
     resetForm() {
-
       this.editingId = null
-
       this.newTransaction = {
-        transaction_type:'',
-        category:'',
-        amount:0,
-        date:'',
-        payment_method:''
+        transaction_type:'', category:'', amount:0, date:'', payment_method:''
       }
-
     },
+
     goProfile() {
       this.$router.push('/profile')
     },
@@ -583,33 +671,16 @@ export default {
       alert('ログアウトしました')
       this.$router.push('/login')
     }
+
   },
 
   async mounted() {
-
     const userStr = localStorage.getItem("currentUser")
-    if (userStr) {
-      this.currentUser = JSON.parse(userStr)
-    } else {
-      this.currentUser = null
-    }
+    this.currentUser = userStr ? JSON.parse(userStr) : null
 
+    await this.fetchBanks()
+    await this.fetchAccounts()
     await this.fetchTransactions()
-
-    if (this.transactions && this.transactions.length) {
-      this.transactions.forEach(t => {
-        console.log(
-          `Transaction ${t.id}: user_id=${t.user_id}, type=${t.transaction_type}, amount=${t.amount}`
-        )
-      })
-    }
-
-    console.log("currentUser:", this.currentUser)
-    console.log("transactions:", this.transactions)
-    console.log("myTransactions:", this.myTransactions)
-    console.log("myIncome:", this.myIncome)
-    console.log("myExpense:", this.myExpense)
-    console.log("myBalance:", this.myBalance)
   }
 }
 </script>
@@ -702,7 +773,7 @@ export default {
   width:100%; 
   height:500px; 
   color: white;
-  }
+}
 
 .top-menu{
   position: absolute;
