@@ -47,7 +47,7 @@ export default {
 
         alert(`ログイン成功: ${res.data.user.username}`)
 
-        this.$router.push('/users')
+        this.$router.push('/transactions')
       } catch (err) {
         if (err.response && err.response.data) {
           this.error = err.response.data.message || 'ログイン失敗'

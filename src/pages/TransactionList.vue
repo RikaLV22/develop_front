@@ -232,7 +232,8 @@
 
               <div
                 class="mb-3"
-                v-if="newTransaction.transaction_type === 'expense' || newTransaction.transaction_type === 'income'"
+                v-if="newTransaction.transaction_type === 'income' ||
+                      (newTransaction.transaction_type === 'expense' && newTransaction.payment_method === '引き落とし')"
               >
 
               <label>口座</label>
@@ -636,6 +637,10 @@ export default {
         alert('追加しました')
         if (this.newTransaction.transaction_type === 'income') {
           await api.patch(`/accounts/${this.selectedAccountId}/add_balance`, {
+            amount: Number(this.newTransaction.amount)
+          })
+        } else if (this.newTransaction.transaction_type === 'expense') {
+          await api.patch(`/accounts/${this.selectedAccountId}/subtract_balance`, {
             amount: Number(this.newTransaction.amount)
           })
         }
