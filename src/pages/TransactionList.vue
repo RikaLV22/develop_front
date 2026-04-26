@@ -74,7 +74,7 @@
           :options="dynamicChartOptions"
           :series="chartSeries"
           height="600"
-          width="400"
+          width="100%"
         />
 
       </div>
@@ -100,7 +100,7 @@
           :options="userPercentOptions"
           :series="userPercentSeries"
           height="200"
-          width="1720"
+          width="100%"
         />
 
       </div>
@@ -695,43 +695,69 @@ export default {
   display:flex; 
   gap:20px; 
   flex-direction: column;
-  max-width: 100%;
+  max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding-top: 5px;
+  padding: 10px;
 }
 
 .top-row {
   display: flex;
   gap: 20px;
-  align-items: stretch;
-  justify-content: flex-start;
+  flex-wrap: wrap; 
   width: 100%;
-  height: auto;
-  flex-wrap: nowrap;
 }
 
 .bottom-row {
   display: flex;
-  justify-content: center;
-  gap: 15;
-  min-width: 1750px;
-  max-width: 1300px;
   flex-direction: column;
-  align-items: stretch;
-  overflow: hidden;
-}
-
-.bar-chart {
   width: 100%;
-  max-width: none;
+  min-width: 0;
+  align-items: stretch;
 }
 
 .calendar-wrapper { 
-  flex: 0 0 600px;
+  flex: 1 1 400px; 
+  max-width: 600px;
   background-color: rgba(0,0,0,0.7);
   border-radius: 20px;
   padding: 10px;
+}
+
+.chart-wrapper {
+  flex: 1 1 400px;
+  min-width: 300px;
+  width: 100%;
+  height: auto;
+  background-color: rgba(0,0,0,0.7);
+  color: white; 
+  border-radius:20px;
+  display:flex; 
+  flex-direction:column; 
+  align-items:stretch;
+  padding:20px; 
+}
+
+.my-panel {
+  flex: 1 1 250px;
+  max-width: 300px;
+  background-color: rgba(0,0,0,0.7);
+  border-radius: 20px;
+  color: white;
+  padding: 20px;
+}
+
+.fc { 
+  width:100%; 
+  height:auto;
+  color: white;
+}
+
+.top-menu{
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .summary {
@@ -741,101 +767,41 @@ export default {
   padding:8px; 
   background-color:rgba(0,0,0,0.7);
   border-radius:10px;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
-.summary-item { font-weight:bold; padding:4px 8px; border-radius:20px; }
+.summary-item { 
+  font-weight:bold; 
+  padding:4px 8px; 
+  border-radius:20px; 
+}
+
 .summary-item.income { background-color:#3b82f6; color:white; }
 .summary-item.expense { background-color:#ef4444; color:white; }
 .summary-item.balance { background-color:#10b981; color:white; }
 
-.chart-wrapper {
-  flex:1; 
-  min-width:550px; 
-  width:2000; 
-  height:567px;
-  background-color: rgba(0,0,0,0.7);
-  color: white; 
-  border-radius:20px;
-  display:flex; 
-  flex-direction:column; 
-  align-items:center;
-  justify-content:flex-start; 
-  padding:20px; 
-  overflow:hidden;
-}
-
 .chart-title { 
   text-align:center; 
   font-weight:bold; 
-  margin-bottom :5px; 
-  font-size:35px; 
+  margin-bottom :10px; 
+  font-size:22px; 
 }
 
-.apexcharts-legend {
-  margin-top: 5px !important;}
+@media (max-width: 768px) {
+  .top-row {
+    flex-direction: column;
+  }
 
-.fc { 
-  width:100%; 
-  height:500px; 
-  color: white;
-}
+  .calendar-wrapper,
+  .chart-wrapper,
+  .my-panel {
+    max-width: 100%;
+    flex: none;
+  }
 
-.top-menu{
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
-#app {
-  min-height: 100vh;
-}
-
-body {
-  margin: 0;
-}
-
-.my-panel {
-  width: 250px;
-  background-color: rgba(0,0,0,0.7);
-  border-radius: 20px;
-  color: white;
-  padding: 20px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-
-.calendar-header {
-  position: absolute;
-  left: 180px;
-  top: 108px;
-  color: white;
-  font-size: 22px;
-  font-weight: bold;
-}
-
-:deep(.apexcharts-tooltip) {
-  background: white !important;
-  color: black !important;
-}
-
-:deep(.apexcharts-tooltip-title) {
-  color: black !important;
-}
-
-:deep(.apexcharts-tooltip-text-y-value) {
-  color: black !important;
-}
-
-:deep(.apexcharts-tooltip-text-y-label){
-  color: black !important;
+  .chart-title {
+    font-size: 18px;
+  }
 }
 </style>

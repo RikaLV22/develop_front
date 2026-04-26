@@ -11,12 +11,22 @@ html, body, #app {
   margin:0;
 }
 
-body{
-  background-image: url('@/assets/backgroundbeta.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  margin: 0;
+#app {
+  position: relative;
+  min-height: 100vh;
+  background: transparent;
+}
+
+#app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url('@/assets/backgroundbeta.jpg')  center / cover no-repeat;
+  z-index: -1;
+}
+
+body {
+  background: transparent;
 }
 
 </style>

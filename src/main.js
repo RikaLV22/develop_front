@@ -38,8 +38,8 @@ const store = new Vuex.Store({
 
 
 new Vue({
-  el: '#app', // または app.$mount('#app')
+  el: '#app', 
   router,
   store,
-  render: h => h(App), // App.vueをレンダリングする
+  render: h => h(App), 
 });

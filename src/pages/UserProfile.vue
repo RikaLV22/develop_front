@@ -40,7 +40,6 @@ export default {
     getAuthHeader() {
       const token = localStorage.getItem('token')
 
-      // 🔍 ここでログを出す
       console.log("token:", token)
 
       return { Authorization: `Bearer ${token}` }
@@ -60,7 +59,6 @@ export default {
     },
 
     async updateOrganization() {
-      // 🔍 headerログ
       console.log("updateOrganization header:", this.getAuthHeader())
 
       try {
