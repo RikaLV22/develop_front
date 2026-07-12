@@ -1,340 +1,388 @@
 <template>
 
-<div class="page">
+  <div class="page">
 
-  <div class="top-menu">
-    <div class="dropdown">
+    <div class="top-menu">
+      <div class="dropdown">
 
-      <button
-        class="btn btn-dark dropdown-toggle"
-        data-bs-toggle="dropdown"
-      >
-        メニュー
-      </button>
+        <button
+          class="btn btn-dark dropdown-toggle"
+          data-bs-toggle="dropdown"
+        >
+          メニュー
+        </button>
 
-      <ul class="dropdown-menu dropdown-menu-end">
+        <ul class="dropdown-menu dropdown-menu-end">
 
-        <li>
-          <button class="dropdown-item" @click="goProfile">
-            プロフィールへ
-          </button>
-        </li>
+          <li>
+            <button class="dropdown-item" @click="goProfile">
+              プロフィールへ
+            </button>
+          </li>
 
-        <li>
-          <hr class="dropdown-divider">
-        </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-        <li>
-          <button class="dropdown-item text-danger" @click="logout">
-            ログアウト
-          </button>
-        </li>
+          <li>
+            <button class="dropdown-item text-danger" @click="logout">
+              ログアウト
+            </button>
+          </li>
 
-      </ul>
-
-    </div>
-  </div>
-
-
-  <div class="dashboard-container">
-
-    <div class="top-row">
-
-      <div class="calendar-wrapper">
-
-        <div class="summary">
-          <div class="summary-item income">収入: {{ totalIncome }}円</div>
-          <div class="summary-item expense">支出: {{ totalExpense }}円</div>
-          <div class="summary-item balance">残金: {{ balance }}円</div>
-        </div>
-
-        <div class="calendar-header">
-          <h3>の家計簿</h3>
-        </div>
-
-        <FullCalendar
-          defaultView="dayGridMonth"
-          :plugins="calendarPlugins"
-          :events="calendarEvents"
-          locale="ja"
-          :header-toolbar="calendarHeader"
-          @dateClick="openModalForDate"
-          @eventClick="openModalForEvent"
-        />
+        </ul>
 
       </div>
-
-
-      <div class="chart-wrapper">
-
-        <h4 class="chart-title">収入と支出内訳</h4>
-
-        <apexchart
-          type="pie"
-          :options="dynamicChartOptions"
-          :series="chartSeries"
-          height="600"
-          width="100%"
-        />
-
-      </div>
-
-      <div class="my-panel">
-        <h5>あなたの収支</h5>
-        <p>総収入: {{ myIncome }}円</p>
-        <p>総支出: {{ myExpense }}円</p>
-        <p>残金: {{ myBalance }}円</p>
-      </div>
-
     </div>
 
 
-    <div class="bottom-row">
+    <div class="dashboard-container">
 
-      <div class="chart-wrapper">
+      <div class="top-row">
 
-        <h4 class="chart-title">ユーザー別支出割合</h4>
+        <div class="calendar-wrapper">
 
-        <apexchart
-          type="bar"
-          :options="userPercentOptions"
-          :series="userPercentSeries"
-          height="200"
-          width="100%"
-        />
-
-      </div>
-
-    </div>
-
-    <div class="modal fade" ref="transactionModal" tabindex="-1">
-
-      <div class="modal-dialog">
-
-        <div class="modal-content">
-
-          <div class="modal-header">
-
-            <h5 class="modal-title">
-              {{ editingId ? '家計簿を編集' : '家計簿をつける' }}
-            </h5>
-
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-
+          <div class="summary">
+            <div class="summary-item income">収入: {{ totalIncome }}円</div>
+            <div class="summary-item expense">支出: {{ totalExpense }}円</div>
+            <div class="summary-item balance">残金: {{ balance }}円</div>
           </div>
 
+          <div class="calendar-header">
+            <h3>の家計簿</h3>
+          </div>
 
-          <div class="modal-body">
+          <FullCalendar
+            defaultView="dayGridMonth"
+            :plugins="calendarPlugins"
+            :events="calendarEvents"
+            locale="ja"
+            :header-toolbar="calendarHeader"
+            @dateClick="openModalForDate"
+            @eventClick="openModalForEvent"
+          />
 
-            <form>
-
-              <div class="mb-3">
-
-                <label>収支種別</label>
-
-                <select class="form-select" v-model="newTransaction.transaction_type">
-
-                  <option value="">選択してください</option>
-                  <option value="income">収入</option>
-                  <option value="expense">支出</option>
-
-                </select>
-
-              </div>
+        </div>
 
 
-              <div class="mb-3">
+        <div class="chart-wrapper">
 
-                <label>カテゴリー</label>
+          <h4 class="chart-title">収入と支出内訳</h4>
 
-                <input
-                  v-if="newTransaction.transaction_type==='income'"
-                  class="form-control"
-                  value="収入"
-                  readonly
-                />
+          <apexchart
+            type="pie"
+            :options="dynamicChartOptions"
+            :series="chartSeries"
+            height="280"
+            width="100%"
+          />
 
-                <select
-                  v-if="newTransaction.transaction_type==='expense'"
-                  class="form-select"
-                  v-model="newTransaction.category"
+        </div>
+
+        <div class="my-panel">
+          <h5>あなたの収支</h5>
+          <p>総収入: {{ myIncome }}円</p>
+          <p>総支出: {{ myExpense }}円</p>
+          <p>残金: {{ myBalance }}円</p>
+        </div>
+
+      </div>
+
+
+      <div class="bottom-row">
+
+        <div class="chart-wrapper">
+
+          <h4 class="chart-title">ユーザー別支出割合</h4>
+
+          <apexchart
+            type="bar"
+            :options="userPercentOptions"
+            :series="userPercentSeries"
+            height="150"
+            width="100%"
+          />
+
+        </div>
+
+      </div>
+
+      <div class="modal fade" ref="transactionModal" tabindex="-1">
+
+        <div class="modal-dialog">
+
+          <div class="modal-content">
+
+            <div class="modal-header">
+
+              <h5 class="modal-title">
+                {{ editingId ? '家計簿を編集' : '家計簿をつける' }}
+              </h5>
+
+              <button class="btn-close" data-bs-dismiss="modal"></button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+              <form>
+
+                <div class="mb-3">
+
+                  <label>収支種別</label>
+
+                  <select class="form-select" v-model="newTransaction.transaction_type">
+
+                    <option value="">選択してください</option>
+                    <option value="income">収入</option>
+                    <option value="expense">支出</option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                  <label>カテゴリー</label>
+
+                  <input
+                    v-if="newTransaction.transaction_type==='income'"
+                    class="form-control"
+                    value="収入"
+                    readonly
+                  />
+
+                  <select
+                    v-if="newTransaction.transaction_type==='expense'"
+                    class="form-select"
+                    v-model="newTransaction.category"
+                  >
+
+                    <option value="">選択してください</option>
+                    <option>食費</option>
+                    <option>交通費</option>
+                    <option>趣味</option>
+                    <option>水道光熱費</option>
+                    <option>家賃</option>
+                    <option>衣類費</option>
+                    <option>医療費</option>
+                    <option>交際費</option>
+                    <option>日用品費</option>
+                    <option>通信費</option>
+                    <option>その他</option>
+
+                  </select>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                  <label>金額</label>
+
+                  <input
+                    type="number"
+                    class="form-control"
+                    v-model="newTransaction.amount"
+                  />
+
+                </div>
+
+
+                <div class="mb-3">
+
+                  <label>日付</label>
+
+                  <input
+                    type="date"
+                    class="form-control"
+                    v-model="newTransaction.date"
+                  />
+
+                </div>
+
+
+                <div class="mb-3">
+
+                  <label>支払方法</label>
+
+                  <input
+                    v-if="newTransaction.transaction_type==='income'"
+                    class="form-control"
+                    value="-"
+                    readonly
+                  />
+
+                  <select
+                    v-if="newTransaction.transaction_type==='expense'"
+                    class="form-select"
+                    v-model="newTransaction.payment_method"
+                  >
+
+                    <option value="">選択してください</option>
+                    <option>現金</option>
+                    <option>クレジット</option>
+                    <option>引き落とし</option>
+
+                  </select>
+
+                </div>
+
+                <div
+                  class="mb-3"
+                  v-if="newTransaction.transaction_type === 'income' ||
+                        (newTransaction.transaction_type === 'expense' && newTransaction.payment_method === '引き落とし')"
                 >
 
-                  <option value="">選択してください</option>
-                  <option>食費</option>
-                  <option>交通費</option>
-                  <option>趣味</option>
-                  <option>水道光熱費</option>
-                  <option>家賃</option>
-                  <option>衣類費</option>
-                  <option>医療費</option>
-                  <option>交際費</option>
-                  <option>日用品費</option>
-                  <option>通信費</option>
-                  <option>その他</option>
+                <label>口座</label>
 
+                <select v-model="selectedAccountId" class="form-select">
+                  <option value="">選択してください</option>
+                  <option
+                    v-for="account in accounts"
+                    :key="account.id"
+                    :value="account.id"
+                  >
+                    {{ account.bank.name }} - {{ account.account_number }}
+                      (残高: {{ account.balance }}円)
+                  </option>
                 </select>
 
-              </div>
+                <button
+                  class="btn btn-sm btn-outline-primary mt-2"
+                  @click.prevent="openAccountModal">
+                  口座を追加
+                </button>
+
+                </div>
+
+              </form>
+
+            </div>
 
 
-              <div class="mb-3">
-
-                <label>金額</label>
-
-                <input
-                  type="number"
-                  class="form-control"
-                  v-model="newTransaction.amount"
-                />
-
-              </div>
-
-
-              <div class="mb-3">
-
-                <label>日付</label>
-
-                <input
-                  type="date"
-                  class="form-control"
-                  v-model="newTransaction.date"
-                />
-
-              </div>
-
-
-              <div class="mb-3">
-
-                <label>支払方法</label>
-
-                <input
-                  v-if="newTransaction.transaction_type==='income'"
-                  class="form-control"
-                  value="-"
-                  readonly
-                />
-
-                <select
-                  v-if="newTransaction.transaction_type==='expense'"
-                  class="form-select"
-                  v-model="newTransaction.payment_method"
-                >
-
-                  <option value="">選択してください</option>
-                  <option>現金</option>
-                  <option>クレジット</option>
-                  <option>引き落とし</option>
-
-                </select>
-
-              </div>
-
-              <div
-                class="mb-3"
-                v-if="newTransaction.transaction_type === 'income' ||
-                      (newTransaction.transaction_type === 'expense' && newTransaction.payment_method === '引き落とし')"
-              >
-
-              <label>口座</label>
-
-              <select v-model="selectedAccountId" class="form-select">
-                <option value="">選択してください</option>
-                <option
-                  v-for="account in accounts"
-                  :key="account.id"
-                  :value="account.id"
-                >
-                  {{ account.bank.name }} - {{ account.account_number }}
-                    (残高: {{ account.balance }}円)
-                </option>
-              </select>
+            <div class="modal-footer">
 
               <button
-                class="btn btn-sm btn-outline-primary mt-2"
-                @click.prevent="openAccountModal">
-                口座を追加
+                v-if="editingId"
+                class="btn btn-danger me-auto"
+                @click="deleteTransaction"
+              >
+                削除
               </button>
 
+              <button class="btn btn-secondary" data-bs-dismiss="modal">
+                閉じる
+              </button>
+
+              <button class="btn btn-primary" @click="createTransaction">
+                {{ editingId ? '編集' : '追加' }}
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal fade" ref="accountModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+
+            <div class="modal-header">
+              <h5 class="modal-title">口座登録</h5>
+              <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+              <div class="mb-3">
+                <label>銀行名</label>
+                <select v-model="newAccount.bank_id" class="form-select">
+                  <option value="">選択してください</option>
+                  <option v-for="bank in banks" :key="bank.id" :value="bank.id">
+                    {{ bank.name }}
+                  </option>
+                </select>
               </div>
 
-            </form>
+              <div class="mb-3">
+                <label>口座番号</label>
+                <input v-model="newAccount.account_number" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label>初期残高</label>
+                <input type="number" v-model="newAccount.balance" class="form-control" />
+              </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+              <button class="btn btn-primary" @click="createAccount">登録</button>
+            </div>
 
           </div>
+        </div>
+      </div>
 
 
-          <div class="modal-footer">
+    </div>
 
-            <button
-              v-if="editingId"
-              class="btn btn-danger me-auto"
-              @click="deleteTransaction"
-            >
-              削除
-            </button>
+    <button
+      class="chat-button"
+      @click="chatOpen = !chatOpen"
+    >
+      💬
+    </button>
 
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-              閉じる
-            </button>
+    <div
+      class="chat-window"
+      v-if="chatOpen"
+    >
 
-            <button class="btn btn-primary" @click="createTransaction">
-              {{ editingId ? '編集' : '追加' }}
-            </button>
+      <div class="chat-header">
+        AI家計簿BOT
 
-          </div>
+        <button @click="chatOpen=false">
+          ✕
+        </button>
 
+      </div>
+
+      <div class="chat-body">
+
+        <div
+          v-for="(message,index) in messages"
+          :key="index"
+          :class="message.role"
+        >
+          {{ message.text }}
         </div>
 
       </div>
 
-    </div>
+      <div class="chat-footer">
 
-    <div class="modal fade" ref="accountModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
+        <input
+          v-model="chatInput"
+          @keyup.enter="sendMessage"
+        >
 
-          <div class="modal-header">
-            <h5 class="modal-title">口座登録</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
+        <button @click="sendMessage">
+          送信
+        </button>
 
-          <div class="modal-body">
-
-            <div class="mb-3">
-              <label>銀行名</label>
-              <select v-model="newAccount.bank_id" class="form-select">
-                <option value="">選択してください</option>
-                <option v-for="bank in banks" :key="bank.id" :value="bank.id">
-                  {{ bank.name }}
-                </option>
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label>口座番号</label>
-              <input v-model="newAccount.account_number" class="form-control" />
-            </div>
-
-            <div class="mb-3">
-              <label>初期残高</label>
-              <input type="number" v-model="newAccount.balance" class="form-control" />
-            </div>
-
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-            <button class="btn btn-primary" @click="createAccount">登録</button>
-          </div>
-
-        </div>
       </div>
-    </div>
 
+    </div>
 
   </div>
-
-</div>
 
 </template>
 
@@ -392,7 +440,7 @@ export default {
         ],
         legend: {
           position: 'bottom',
-          offsetY: -40,
+          offsetY: 10,
           labels: { colors: '#ffffff' },
           fontSize: '16px',
           fontWeight: 600
@@ -467,8 +515,20 @@ export default {
         legend: {
           show: false
         }
-      }
+      },
+
+      chatOpen: false,
+
+      messages: [
+        {
+          role:"bot",
+          text:"こんにちは！家計簿BOTです！"
+        }
+      ],
+
+      chatInput:""
     }
+
   },
 
   computed: {
@@ -675,6 +735,36 @@ export default {
       localStorage.removeItem('token')
       alert('ログアウトしました')
       this.$router.push('/login')
+    },
+
+    async sendMessage() {
+      const message = this.chatInput
+
+      if (!message.trim()) return
+
+      this.messages.push({
+        role: "user",
+        text: message
+      })
+
+      this.chatInput = ""
+
+      try {
+        const res = await api.post("/chat", {
+          message: message
+        })
+
+        this.messages.push({
+          role: "bot",
+          text: res.data.reply
+        })
+      } catch (error) {
+        this.messages.push({
+          role: "bot",
+          text: "エラーが発生しました。"
+        })
+        console.error(error)
+      }
     }
 
   },
@@ -686,71 +776,69 @@ export default {
     await this.fetchBanks()
     await this.fetchAccounts()
     await this.fetchTransactions()
-  }
+  },
+
 }
 </script>
 
 <style scoped>
-.dashboard-container { 
-  display:flex; 
-  gap:20px; 
-  flex-direction: column;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 10px;
+
+.page {
+  width:100vw;
+  min-height:100vh;
+  overflow-x:hidden;
 }
+
+
+.dashboard-container { 
+  width:100%;
+  min-height:100vh;
+  padding:20px;
+  box-sizing:border-box;
+}
+
 
 .top-row {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap; 
-  width: 100%;
+  display:grid;
+  grid-template-columns: 1.2fr 1.5fr 0.8fr;
+  gap:30px;
+  width:100%;
+  min-height:520px;
 }
+
+.calendar-wrapper,
+.chart-wrapper,
+.my-panel {
+
+  background:rgba(0,0,0,0.65);
+
+  border-radius:20px;
+
+  padding:20px;
+
+  box-sizing:border-box;
+
+  color: white;
+}
+
+
 
 .bottom-row {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  align-items: stretch;
+  margin-top:30px;
 }
 
-.calendar-wrapper { 
-  flex: 1 1 400px; 
-  max-width: 600px;
-  background-color: rgba(0,0,0,0.7);
-  border-radius: 20px;
-  padding: 10px;
+.bottom-row .chart-wrapper {
+  height:220px;
 }
 
-.chart-wrapper {
-  flex: 1 1 400px;
-  min-width: 300px;
-  width: 100%;
-  height: auto;
-  background-color: rgba(0,0,0,0.7);
-  color: white; 
-  border-radius:20px;
-  display:flex; 
-  flex-direction:column; 
-  align-items:stretch;
-  padding:20px; 
+
+
+.fc {
+  width:100%;
 }
 
-.my-panel {
-  flex: 1 1 250px;
-  max-width: 300px;
-  background-color: rgba(0,0,0,0.7);
-  border-radius: 20px;
-  color: white;
-  padding: 20px;
-}
-
-.fc { 
-  width:100%; 
-  height:auto;
-  color: white;
+.fc-view-harness {
+  min-height:500px;
 }
 
 .top-menu{
@@ -803,5 +891,93 @@ export default {
   .chart-title {
     font-size: 18px;
   }
+}
+
+.chat-button{
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+
+  width: 65px;
+  height: 65px;
+
+  border-radius: 50%;
+  border: none;
+
+  font-size: 30px;
+
+  background: #4f46e5;
+  color: white;
+
+  box-shadow: 0 5px 15px rgba(0,0,0,.3);
+
+  z-index: 9999;
+}
+
+.chat-window{
+
+  position: fixed;
+
+  right: 25px;
+  bottom: 100px;
+
+  width: 360px;
+  height: 520px;
+
+  background:white;
+
+  border-radius:15px;
+
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+
+  display:flex;
+  flex-direction:column;
+
+  z-index:9999;
+}
+
+.chat-header{
+
+  padding:15px;
+
+  background:#4f46e5;
+
+  color:white;
+
+  display:flex;
+
+  justify-content:space-between;
+}
+
+.chat-body{
+
+  flex:1;
+
+  overflow:auto;
+
+  padding:15px;
+}
+
+.chat-footer{
+
+  display:flex;
+
+  padding:10px;
+
+  gap:10px;
+}
+
+.user{
+
+  text-align:right;
+
+  margin-bottom:10px;
+}
+
+.bot{
+
+  text-align:left;
+
+  margin-bottom:10px;
 }
 </style>

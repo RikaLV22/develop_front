@@ -30,7 +30,7 @@ body {
 }
 
 </style>
-import { createRouter, createWebHistory } from 'vue-router'
+<!-- import { createRouter, createWebHistory } from 'vue-router'
 import TransactionList from '@/components/TransactionList.vue'
 
 const routes = [
@@ -46,4 +46,4 @@ const router = createRouter({
   routes
 })
 
-export default router
+export default router -->
