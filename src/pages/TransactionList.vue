@@ -2,6 +2,14 @@
 
   <div class="page">
 
+    <div class="blob-background">
+
+      <div class="blob blob1"></div>
+      <div class="blob blob2"></div>
+      <div class="blob blob3"></div>
+
+    </div>
+
     <div class="top-menu">
       <div class="dropdown">
 
@@ -784,9 +792,10 @@ export default {
 <style scoped>
 
 .page {
-  width:100vw;
+  width:100%;
   min-height:100vh;
   overflow-x:hidden;
+  position: relative;
 }
 
 
@@ -797,11 +806,10 @@ export default {
   box-sizing:border-box;
 }
 
-
 .top-row {
   display:grid;
-  grid-template-columns: 1.2fr 1.5fr 0.8fr;
-  gap:30px;
+  grid-template-columns: 1.2fr 1.3fr 0.7fr;
+  gap:20px;
   width:100%;
   min-height:520px;
 }
@@ -811,17 +819,13 @@ export default {
 .my-panel {
 
   background:rgba(0,0,0,0.65);
-
   border-radius:20px;
-
-  padding:20px;
-
+  padding:10px;
   box-sizing:border-box;
-
   color: white;
+  min-height: 200px;
+  min-width: 0;
 }
-
-
 
 .bottom-row {
   margin-top:30px;
@@ -830,8 +834,6 @@ export default {
 .bottom-row .chart-wrapper {
   height:220px;
 }
-
-
 
 .fc {
   width:100%;
@@ -893,47 +895,52 @@ export default {
   }
 }
 
-.chat-button{
+.top-menu {
   position: fixed;
-  right: 25px;
-  bottom: 25px;
-
-  width: 65px;
-  height: 65px;
-
-  border-radius: 50%;
-  border: none;
-
-  font-size: 30px;
-
-  background: #4f46e5;
-  color: white;
-
-  box-shadow: 0 5px 15px rgba(0,0,0,.3);
-
-  z-index: 9999;
+  top:20px;
+  right:20px;
+  z-index:9999;
 }
 
-.chat-window{
+
+.chat-button {
+  position: fixed;
+  right:25px;
+  bottom:25px;
+  z-index:99999;
+
+  width:60px;
+  height:60px;
+
+  border-radius:50%;
+  border:none;
+
+  cursor:pointer;
+}
+
+.chat-window {
 
   position: fixed;
 
-  right: 25px;
-  bottom: 100px;
+  right:25px;
+  bottom:100px;
 
-  width: 360px;
-  height: 520px;
+  width:350px;
+  height:450px;
 
   background:white;
 
-  border-radius:15px;
+  border-radius:20px;
 
   box-shadow:0 10px 30px rgba(0,0,0,.3);
+
+  z-index:99999;
 
   display:flex;
   flex-direction:column;
 
-  z-index:9999;
+  overflow:hidden;
+
 }
 
 .chat-header{
@@ -980,4 +987,118 @@ export default {
 
   margin-bottom:10px;
 }
+
+::v-deep(.apexcharts-tooltip) {
+  color: #000 !important;
+}
+
+::v-deep(.apexcharts-tooltip-title) {
+  color: #000 !important;
+}
+
+::v-deep(.apexcharts-tooltip-text) {
+  color: #000 !important;
+}
+
+::v-deep(.apexcharts-tooltip-series-group) {
+  color: #000 !important;
+}
+
+.blob-background{
+
+  position:fixed;
+
+  inset:0;
+
+  overflow:hidden;
+
+  z-index:0;
+
+  pointer-events:none;
+
+}
+
+.blob{
+
+  position:absolute;
+
+  border-radius:50%;
+
+  filter:blur(90px);
+
+  opacity:0.45;
+
+  animation:blobMove 20s infinite alternate ease-in-out;
+
+}
+
+.blob1{
+
+  width:500px;
+  height:500px;
+
+  background:#60a5fa;
+
+  top:-150px;
+  left:-120px;
+
+}
+
+.blob2{
+
+  width:450px;
+  height:450px;
+
+  background:#c084fc;
+
+  right:-100px;
+  top:200px;
+
+  animation-delay:5s;
+
+}
+
+.blob3{
+
+  width:550px;
+  height:550px;
+
+  background:#67e8f9;
+
+  bottom:-200px;
+  left:35%;
+
+  animation-delay:10s;
+
+}
+
+@keyframes blobMove{
+
+
+  0%{
+
+    transform:
+      translate(0,0)
+      scale(1);
+
+  }
+
+  50%{
+
+    transform:
+      translate(80px,50px)
+      scale(1.2);
+
+  }
+
+  100%{
+
+    transform:
+      translate(-50px,100px)
+      scale(0.9);
+
+  }
+
+}
+
 </style>

@@ -6,28 +6,26 @@
 
 <style>
 
-html, body, #app {
+html,
+body,
+#app {
   height:100%;
   margin:0;
 }
 
-#app {
-  position: relative;
-  min-height: 100vh;
-  background: transparent;
-}
-
-#app::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: url('@/assets/backgroundbeta.jpg')  center / cover no-repeat;
-  z-index: -1;
-}
 
 body {
-  background: transparent;
+  background:white;
 }
+
+
+#app {
+  position:relative;
+  min-height:100vh;
+  background:white;
+  overflow: hidden;
+}
+
 
 </style>
 <!-- import { createRouter, createWebHistory } from 'vue-router'
